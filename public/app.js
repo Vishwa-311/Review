@@ -77,12 +77,11 @@ function predictReview(text, threshold = 0.5) {
   const numFeats = extractNumericFeatures(text);
   
   if (!modelWeights || !modelWeights.vocabulary) {
-    // Fallback heuristic scoring if weights are loading
-    let score = 0.2;
+    let score = 0.05;
     if (numFeats.repeated_phrases > 0) score += 0.45 * numFeats.repeated_phrases;
     if (numFeats.exclamation_count >= 2) score += 0.25;
     if (numFeats.all_caps_tokens >= 1) score += 0.2;
-    const clamped = Math.min(Math.max(score, 0.02), 0.98);
+    const clamped = Math.min(Math.max(score, 0.01), 0.99);
     return { prob: clamped, isFake: clamped >= threshold, features: numFeats, z: 0 };
   }
   
@@ -102,26 +101,47 @@ function predictReview(text, threshold = 0.5) {
     tf[ng] = (tf[ng] || 0) + 1;
   });
   
-  let z = modelWeights.intercept || 0;
-  
+  // Scikit-Learn TfidfVectorizer L2 normalization calculation
+  const vec = {};
+  let normSq = 0.0;
   Object.keys(tf).forEach(term => {
     if (modelWeights.vocabulary.hasOwnProperty(term)) {
       const idx = modelWeights.vocabulary[term];
       const idfVal = modelWeights.idf[idx];
-      const tfidfVal = tf[term] * idfVal;
-      const weight = modelWeights.coef[idx];
-      z += tfidfVal * weight;
+      const val = tf[term] * idfVal;
+      vec[term] = { idx, val };
+      normSq += val * val;
     }
   });
   
-  const numWeights = modelWeights.coef.slice(-6);
+  const norm = Math.sqrt(normSq);
+  let z = modelWeights.intercept || 0;
   
-  z += numFeats.sentiment * (numWeights[0] || 0);
-  z += numFeats.exclamation_count * (numWeights[1] || 0);
-  z += numFeats.all_caps_tokens * (numWeights[2] || 0);
-  z += numFeats.repeated_phrases * (numWeights[3] || 0);
-  z += (numFeats.char_length / 100) * (numWeights[4] || 0);
-  z += numFeats.unique_word_ratio * (numWeights[5] || 0);
+  // TF-IDF dot product with L2 normalized vector
+  Object.keys(vec).forEach(term => {
+    const item = vec[term];
+    const normedVal = norm > 0 ? item.val / norm : 0;
+    const weight = modelWeights.coef[item.idx];
+    z += normedVal * weight;
+  });
+  
+  // Numeric features contribution scaled by StandardScaler scale_
+  const numWeights = modelWeights.coef.slice(-6);
+  const scale = modelWeights.scale || [0.164, 2.58, 0.458, 0.601, 8.087, 0.073];
+  
+  const numVals = [
+    numFeats.sentiment,
+    numFeats.exclamation_count,
+    numFeats.all_caps_tokens,
+    numFeats.repeated_phrases,
+    numFeats.char_length,
+    numFeats.unique_word_ratio
+  ];
+  
+  for (let i = 0; i < 6; i++) {
+    const scaled = scale[i] > 0 ? numVals[i] / scale[i] : numVals[i];
+    z += scaled * (numWeights[i] || 0);
+  }
   
   const prob = 1 / (1 + Math.exp(-z));
   const isFake = prob >= threshold;
@@ -159,7 +179,6 @@ function highlightSuspicious(text) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Load weights
   try {
     const res = await fetch("./model_weights.json");
     if (res.ok) {
@@ -169,7 +188,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.warn("Model weights fetch warning:", err);
   }
 
-  // Load sample dataset
   try {
     const sampleRes = await fetch("./reviews_sample.csv");
     if (sampleRes.ok) {
@@ -381,7 +399,6 @@ function parseCSVFull(text) {
 function parseSampleCSV(text) {
   sampleData = parseCSVFull(text);
   if (sampleData.length === 0) {
-    // Fallback if formatting differs
     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
     for (let i = 1; i < lines.length; i++) {
       const values = parseCSVLine(lines[i]);
