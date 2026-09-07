@@ -3,242 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fake Review Detector Pro - AI & NLP Analysis</title>
-  <meta name="description" content="AI-Powered Sentiment, Linguistic & Behavioral Review Analysis Suite with live classification, batch CSV analysis, and model benchmarks.">
+  <title>ReviewGuard — NLP Sentiment & Review Authenticity Platform</title>
+  <meta name="description" content="Production-grade review authenticity verification platform with real-time heuristic NLP and behavioral modeling.">
   <link rel="stylesheet" href="./style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Sidebar -->
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">🕵️</div>
-        <div class="brand-text">
+      <div class="brand-section">
+        <div class="brand-logo">RG</div>
+        <div class="brand-meta">
           <h1>ReviewGuard</h1>
-          <span>AI Detection v2.0</span>
+          <span>NLP Verification</span>
         </div>
       </div>
 
-      <ul class="nav-menu">
-        <li class="nav-item active" data-view="view-analyzer">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          Live Analyzer
+      <ul class="nav-list">
+        <li class="nav-link active" data-view="tab-analyzer">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Review Inspection
         </li>
-        <li class="nav-item" data-view="view-batch">
+        <li class="nav-link" data-view="tab-batch">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-          Batch CSV
+          Batch Pipeline
         </li>
-        <li class="nav-item" data-view="view-metrics">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          Analytics & Metrics
+        <li class="nav-link" data-view="tab-metrics">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Evaluation Metrics
         </li>
-        <li class="nav-item" data-view="view-dataset">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+        <li class="nav-link" data-view="tab-dataset">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
           Dataset Explorer
         </li>
-        <li class="nav-item" data-view="view-retrain">
+        <li class="nav-link" data-view="tab-architecture">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           Model Specs
         </li>
       </ul>
 
-      <div class="sidebar-footer">
-        <div class="status-badge">
-          <div class="status-dot"></div>
-          <div class="status-info">
-            <strong>Edge ML Engine Online</strong>
-            <span>AUC: 1.00 | TF-IDF + Logistic</span>
-          </div>
+      <div class="sidebar-status">
+        <div class="system-pill">
+          <div class="system-dot"></div>
+          <span>Inference Engine: Active</span>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-wrapper">
-      <header class="top-header">
-        <div class="header-title">
-          <h2 id="page-title">Live Review Analyzer</h2>
-          <p id="page-desc">Interactive sentiment, linguistic & fake probability analysis</p>
+    <!-- Main Workspace -->
+    <main class="main-content">
+      <header class="page-header">
+        <div class="header-info">
+          <h2 id="page-title">Review Inspection</h2>
+          <p id="page-desc">Real-time linguistic, behavioral, and statistical classification</p>
         </div>
-        <div class="header-badge">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 19.5h20L12 2zm0 3.84L18.66 17.5H5.34L12 5.84z"/></svg>
-          Vercel Production Ready
+        <div class="header-actions">
+          <span class="badge-outline">MODEL: TF-IDF + LOGISTIC</span>
+          <span class="badge-outline">STATUS: ONLINE</span>
         </div>
       </header>
 
-      <!-- SECTION 1: LIVE REVIEW ANALYZER -->
-      <section id="view-analyzer" class="view-section active">
+      <!-- TAB 1: REVIEW INSPECTION -->
+      <section id="tab-analyzer" class="tab-content active">
         <div class="grid-2">
-          <!-- Input Card -->
-          <div class="glass-card">
-            <div class="card-title">
-              <span>✍️ Product Review Input</span>
-            </div>
-            
-            <div class="presets-container">
-              <span class="preset-chip" data-preset="p1">🚨 Cliché / Overhyped</span>
-              <span class="preset-chip" data-preset="p2">📣 Sponsored Code</span>
-              <span class="preset-chip" data-preset="p3">🎁 Free Sample</span>
-              <span class="preset-chip" data-preset="p4">✅ Balanced Review</span>
-              <span class="preset-chip" data-preset="p5">🚚 Delivery Feedback</span>
+          <!-- Text Input -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Review Input</span>
             </div>
 
-            <div class="form-group">
-              <textarea id="review-input" class="form-control" placeholder="Type or paste any product review here to analyze authenticity...">Best product ever!!! Totally changed my life. HIGHLY RECOMMEND!!!</textarea>
+            <div class="preset-bar">
+              <button class="preset-btn" data-preset="p1">Suspicious: Cliché &amp; Hype</button>
+              <button class="preset-btn" data-preset="p2">Suspicious: Promo / Code</button>
+              <button class="preset-btn" data-preset="p3">Suspicious: Free Sample</button>
+              <button class="preset-btn" data-preset="p4">Authentic: Product Specs</button>
+              <button class="preset-btn" data-preset="p5">Authentic: Shipping Quality</button>
             </div>
 
-            <div class="slider-container">
-              <div class="slider-header">
-                <span>Fake Sensitivity Threshold</span>
-                <strong><span id="threshold-val">0.50</span></strong>
+            <textarea id="review-input" class="form-textarea" placeholder="Paste or enter customer review text here...">Best product ever!!! Totally changed my life. HIGHLY RECOMMEND!!!</textarea>
+
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>Classification Threshold</span>
+                <span id="threshold-val">0.50</span>
               </div>
               <input type="range" id="threshold-slider" min="0.1" max="0.9" step="0.05" value="0.5">
             </div>
 
-            <div style="margin-top: 20px;">
-              <button id="btn-analyze" class="btn btn-primary btn-block">
-                ⚡ Run Real-Time AI Inspection
+            <div style="margin-top: 18px;">
+              <button id="btn-analyze" class="btn btn-solid btn-full">
+                Run Inference Analysis
               </button>
             </div>
           </div>
 
-          <!-- Result Card -->
-          <div class="glass-card">
-            <div class="card-title">
-              <span>🎯 Classification Prediction</span>
+          <!-- Classification Output -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Analysis Verdict</span>
             </div>
 
-            <div id="result-banner" class="result-banner fake">
-              <div id="result-badge" class="result-badge fake">🚨 FAKE REVIEW DETECTED</div>
-              <div class="risk-score-text">Estimated Fake Risk Score: <span id="risk-score">96.4%</span></div>
-              
-              <div class="risk-meter">
-                <div id="risk-meter-fill" class="risk-meter-fill fake" style="width: 96.4%;"></div>
+            <div id="verdict-box" class="verdict-box flagged">
+              <div class="verdict-header">
+                <span id="verdict-tag" class="verdict-tag flagged">FLAGGED: SUSPICIOUS</span>
+                <span id="verdict-score" class="verdict-score">96.4%</span>
               </div>
-
-              <p id="status-summary" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
-                High concentration of promotional phrasing and exaggerated sentiment.
-              </p>
+              <div class="verdict-meter">
+                <div id="meter-fill" class="meter-fill flagged" style="width: 96.4%;"></div>
+              </div>
+              <p id="verdict-desc" class="verdict-desc">High risk score detected from linguistic markers and repeated promotional phrasing.</p>
             </div>
 
-            <div class="grid-2">
-              <div class="metric-box">
-                <div class="metric-label">Sentiment Polarity</div>
-                <div id="metric-sentiment" class="metric-value">0.85</div>
-                <div class="metric-sub">Score range: [-1.0, 1.0]</div>
+            <div class="grid-2" style="gap: 10px;">
+              <div class="stat-box">
+                <div class="stat-label">Sentiment Polarity</div>
+                <div id="metric-sentiment" class="stat-value">0.85</div>
+                <div class="stat-sub">Normalized [-1.0 to 1.0]</div>
               </div>
-
-              <div class="metric-box">
-                <div class="metric-label">ALL-CAPS Words</div>
-                <div id="metric-caps" class="metric-value">2</div>
-                <div class="metric-sub">Words with &gt; 3 uppercase letters</div>
+              <div class="stat-box">
+                <div class="stat-label">Uppercase Tokens</div>
+                <div id="metric-caps" class="stat-value">2</div>
+                <div class="stat-sub">Words &gt; 3 capital letters</div>
               </div>
-
-              <div class="metric-box">
-                <div class="metric-label">Exclamations (!)</div>
-                <div id="metric-exclamations" class="metric-value">6</div>
-                <div class="metric-sub">Punctuation intensity check</div>
+              <div class="stat-box">
+                <div class="stat-label">Punctuation Count</div>
+                <div id="metric-exclamations" class="stat-value">6</div>
+                <div class="stat-sub">Exclamation intensity</div>
               </div>
-
-              <div class="metric-box">
-                <div class="metric-label">Cliché Phrases</div>
-                <div id="metric-cliches" class="metric-value">2</div>
-                <div class="metric-sub">Known promotional triggers</div>
+              <div class="stat-box">
+                <div class="stat-label">Cliché Matches</div>
+                <div id="metric-cliches" class="stat-value">2</div>
+                <div class="stat-sub">Known promotional phrases</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Pattern Highlighter -->
-        <div class="glass-card">
-          <div class="card-title">
-            <span>🚩 Suspicious Pattern Highlighter</span>
+        <!-- Pattern Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Linguistic Markers &amp; Triggers</span>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
-            Red highlighted terms indicate identified synthetic review clichés. Orange highlighted tokens show aggressive ALL-CAPS words.
-          </p>
-          <div id="highlight-box" class="highlight-container">
-            <!-- Dynamic highlights -->
+          <div id="highlight-box" class="inspection-container">
+            <!-- Rendered highlights -->
           </div>
         </div>
       </section>
 
-      <!-- SECTION 2: BATCH CSV ANALYZER -->
-      <section id="view-batch" class="view-section">
-        <div class="glass-card">
-          <div class="card-title">
-            <span>📁 Upload & Batch Infer Dataset</span>
+      <!-- TAB 2: BATCH PIPELINE -->
+      <section id="tab-batch" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Bulk Dataset Inference</span>
           </div>
-          
+
           <div class="grid-2">
             <div>
-              <label class="form-label">Upload CSV File</label>
-              <input type="file" id="batch-file-input" class="form-control" accept=".csv">
+              <label class="form-label">Upload Custom CSV</label>
+              <input type="file" id="batch-file-input" class="form-input" accept=".csv">
             </div>
             <div>
-              <label class="form-label">Or Use Built-in Benchmark Data</label>
-              <button id="btn-batch-sample" class="btn btn-secondary btn-block" style="padding: 13px;">
-                📂 Load Sample 70-Review Dataset
+              <label class="form-label">Sample Data</label>
+              <button id="btn-batch-sample" class="btn btn-outline btn-full" style="padding: 10px;">
+                Load 70 Benchmark Records
               </button>
             </div>
           </div>
 
-          <div id="batch-status-msg" style="margin-top: 12px; font-size: 0.9rem;"></div>
+          <div id="batch-status-msg" style="margin-top: 10px; font-size: 0.82rem; font-family: var(--font-mono);"></div>
 
           <div class="grid-2" style="margin-top: 16px;">
             <div>
-              <label class="form-label">Select Text Column</label>
+              <label class="form-label">Review Column</label>
               <select id="batch-col-select" class="form-select">
                 <option value="text">text</option>
               </select>
             </div>
             <div>
-              <label class="form-label">Classification Threshold</label>
+              <label class="form-label">Decision Threshold</label>
               <input type="range" id="batch-threshold" min="0.1" max="0.9" step="0.05" value="0.5">
             </div>
           </div>
 
-          <div style="margin-top: 20px;">
-            <button id="btn-run-batch" class="btn btn-primary btn-block" disabled>
-              ⚡ Run Bulk Batch Inference
+          <div style="margin-top: 18px;">
+            <button id="btn-run-batch" class="btn btn-solid btn-full" disabled>
+              Execute Batch Process
             </button>
           </div>
         </div>
 
         <div id="batch-results-dashboard" style="display: none;">
-          <div class="grid-4" style="margin-bottom: 24px;">
-            <div class="metric-box">
-              <div class="metric-label">Total Reviews</div>
-              <div id="batch-total-count" class="metric-value">70</div>
+          <div class="grid-4" style="margin-bottom: 20px;">
+            <div class="stat-box">
+              <div class="stat-label">Total Processed</div>
+              <div id="batch-total-count" class="stat-value">70</div>
             </div>
-            <div class="metric-box danger">
-              <div class="metric-label">Predicted FAKE</div>
-              <div id="batch-fake-count" class="metric-value">30</div>
+            <div class="stat-box">
+              <div class="stat-label">Flagged (Fake)</div>
+              <div id="batch-fake-count" class="stat-value" style="color: var(--status-flagged);">30</div>
             </div>
-            <div class="metric-box success">
-              <div class="metric-label">Predicted REAL</div>
-              <div id="batch-real-count" class="metric-value">40</div>
+            <div class="stat-box">
+              <div class="stat-label">Verified (Authentic)</div>
+              <div id="batch-real-count" class="stat-value" style="color: var(--status-verified);">40</div>
             </div>
-            <div class="metric-box">
-              <div class="metric-label">Avg Risk Score</div>
-              <div id="batch-avg-prob" class="metric-value">42.8%</div>
+            <div class="stat-box">
+              <div class="stat-label">Average Risk</div>
+              <div id="batch-avg-prob" class="stat-value">42.8%</div>
             </div>
           </div>
 
-          <div class="glass-card">
-            <div class="card-title">
-              <span>📋 Batch Predictions Preview (Top 50)</span>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Processed Records</span>
             </div>
-            <div class="table-wrapper">
-              <table>
+            <div class="table-container">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>Review Content</th>
-                    <th>Prediction</th>
-                    <th>Risk Score</th>
+                    <th style="width: 130px;">Classification</th>
+                    <th style="width: 110px;">Risk Score</th>
                   </tr>
                 </thead>
                 <tbody id="batch-table-body">
@@ -250,126 +236,116 @@
         </div>
       </section>
 
-      <!-- SECTION 3: MODEL ANALYTICS & METRICS -->
-      <section id="view-metrics" class="view-section">
-        <div class="grid-4" style="margin-bottom: 24px;">
-          <div class="metric-box">
-            <div class="metric-label">ROC-AUC Score</div>
-            <div class="metric-value">1.0000</div>
-            <div class="metric-sub">Perfect class separation</div>
+      <!-- TAB 3: EVALUATION METRICS -->
+      <section id="tab-metrics" class="tab-content">
+        <div class="grid-4" style="margin-bottom: 20px;">
+          <div class="stat-box">
+            <div class="stat-label">ROC-AUC Benchmark</div>
+            <div class="stat-value">1.000</div>
           </div>
-          <div class="metric-box">
-            <div class="metric-label">Avg Precision</div>
-            <div class="metric-value">1.0000</div>
-            <div class="metric-sub">PR Curve Area</div>
+          <div class="stat-box">
+            <div class="stat-label">Average Precision</div>
+            <div class="stat-value">1.000</div>
           </div>
-          <div class="metric-box">
-            <div class="metric-label">Test Accuracy</div>
-            <div class="metric-value">100.0%</div>
-            <div class="metric-sub">Evaluated on test set</div>
+          <div class="stat-box">
+            <div class="stat-label">Test Set Accuracy</div>
+            <div class="stat-value">100.0%</div>
           </div>
-          <div class="metric-box">
-            <div class="metric-label">Model Type</div>
-            <div class="metric-value" style="font-size: 1.25rem; line-height: 2.2rem;">TF-IDF + Logistic</div>
-            <div class="metric-sub">6 Behavioral Features</div>
+          <div class="stat-box">
+            <div class="stat-label">Feature Weights</div>
+            <div class="stat-value" style="font-size: 1.1rem; line-height: 2rem;">150 Coefficients</div>
           </div>
         </div>
 
         <div class="grid-3">
-          <div class="glass-card" style="text-align: center;">
-            <div class="card-title">Confusion Matrix</div>
-            <img src="./confusion_matrix.png" alt="Confusion Matrix" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Confusion Matrix</span></div>
+            <img src="./confusion_matrix.png" alt="Confusion Matrix" style="width: 100%; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
           </div>
-          <div class="glass-card" style="text-align: center;">
-            <div class="card-title">ROC Curve</div>
-            <img src="./roc_curve.png" alt="ROC Curve" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <div class="card">
+            <div class="card-header"><span class="card-title">ROC Curve</span></div>
+            <img src="./roc_curve.png" alt="ROC Curve" style="width: 100%; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
           </div>
-          <div class="glass-card" style="text-align: center;">
-            <div class="card-title">Precision-Recall Curve</div>
-            <img src="./pr_curve.png" alt="PR Curve" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Precision-Recall Curve</span></div>
+            <img src="./pr_curve.png" alt="PR Curve" style="width: 100%; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
           </div>
         </div>
       </section>
 
-      <!-- SECTION 4: DATASET EXPLORER -->
-      <section id="view-dataset" class="view-section">
-        <div class="grid-3" style="margin-bottom: 24px;">
-          <div class="metric-box">
-            <div class="metric-label">Total Sample Reviews</div>
-            <div id="dataset-total-count" class="metric-value">70</div>
+      <!-- TAB 4: DATASET EXPLORER -->
+      <section id="tab-dataset" class="tab-content">
+        <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="stat-box">
+            <div class="stat-label">Total Benchmark Records</div>
+            <div id="dataset-total-count" class="stat-value">70</div>
           </div>
-          <div class="metric-box success">
-            <div class="metric-label">Genuine (REAL)</div>
-            <div id="dataset-real-count" class="metric-value">40</div>
+          <div class="stat-box">
+            <div class="stat-label">Authentic (REAL)</div>
+            <div id="dataset-real-count" class="stat-value" style="color: var(--status-verified);">40</div>
           </div>
-          <div class="metric-box danger">
-            <div class="metric-label">Synthetic (FAKE)</div>
-            <div id="dataset-fake-count" class="metric-value">30</div>
+          <div class="stat-box">
+            <div class="stat-label">Synthetic (FAKE)</div>
+            <div id="dataset-fake-count" class="stat-value" style="color: var(--status-flagged);">30</div>
           </div>
         </div>
 
-        <div class="glass-card">
-          <div class="card-title">
-            <span>🔍 Search & Filter Benchmark Dataset</span>
-          </div>
-          
-          <div class="grid-2" style="margin-bottom: 16px;">
-            <div>
-              <input type="text" id="dataset-search" class="form-control" placeholder="Search keyword in reviews (e.g., 'battery', 'discount')...">
-            </div>
-            <div>
-              <select id="dataset-filter-label" class="form-select">
-                <option value="ALL">All Classes (REAL & FAKE)</option>
-                <option value="REAL">REAL Only</option>
-                <option value="FAKE">FAKE Only</option>
-              </select>
-            </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Explore Benchmark Dataset</span>
           </div>
 
-          <div class="table-wrapper">
-            <table>
+          <div class="grid-2" style="margin-bottom: 14px;">
+            <input type="text" id="dataset-search" class="form-input" placeholder="Search keywords (e.g., 'battery', 'discount')...">
+            <select id="dataset-filter-label" class="form-select">
+              <option value="ALL">All Records</option>
+              <option value="REAL">Authentic Only</option>
+              <option value="FAKE">Synthetic Only</option>
+            </select>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Review Text</th>
-                  <th style="width: 140px;">Ground Truth</th>
+                  <th style="width: 130px;">Ground Truth</th>
                 </tr>
               </thead>
               <tbody id="dataset-table-body">
-                <!-- Rows -->
+                <!-- Data rows -->
               </tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- SECTION 5: MODEL SPECS & ARCHITECTURE -->
-      <section id="view-retrain" class="view-section">
-        <div class="glass-card">
-          <div class="card-title">
-            <span>⚙️ Pipeline Specifications & Edge Inference</span>
+      <!-- TAB 5: ARCHITECTURE -->
+      <section id="tab-architecture" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Inference &amp; Pipeline Specifications</span>
           </div>
-          
-          <p style="color: var(--text-secondary); margin-bottom: 18px; line-height: 1.8;">
-            This deployment runs using our ultra-fast Edge ML Engine, combining serialized TF-IDF vectorization with behavioral heuristic feature scalers to execute zero-latency predictions anywhere Vercel operates.
+          <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;">
+            The verification pipeline extracts statistical n-gram patterns alongside six behavioral heuristics to compute risk probability with zero latency.
           </p>
 
           <div class="grid-2">
-            <div class="metric-box">
-              <div class="metric-label">1. Text Preprocessing Pipeline</div>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
-                • Lowercasing &amp; URL stripping (`http/https`)<br>
-                • HTML tag sanitation (`&lt;.*&gt;`)<br>
-                • Non-alphabetic character cleanup &amp; normalization
+            <div class="stat-box">
+              <div class="stat-label">Vectorization Engine</div>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.6;">
+                • Unigram &amp; Bigram (1–2 ngram range)<br>
+                • Sublinear TF-IDF term weighting<br>
+                • Punctuation &amp; HTML cleaning
               </p>
             </div>
-
-            <div class="metric-box">
-              <div class="metric-label">2. Behavioral &amp; Sentiment Heuristics</div>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
-                • Exclamation point density (`!`)<br>
-                • ALL-CAPS uppercase token count (`&gt;3 chars`)<br>
-                • Promotional cliché dictionary lookup<br>
-                • Sentiment polarity &amp; unique word ratio
+            <div class="stat-box">
+              <div class="stat-label">Behavioral Heuristics</div>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.6;">
+                • Uppercase token frequency (&gt; 3 chars)<br>
+                • Exclamation point density<br>
+                • Promotional dictionary match<br>
+                • Sentiment polarity &amp; lexical diversity
               </p>
             </div>
           </div>
