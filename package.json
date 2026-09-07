@@ -1,0 +1,16 @@
+{
+  "name": "fake-review-detector",
+  "version": "2.0.0",
+  "description": "AI-powered Fake vs Real Product Review Detection Suite with ML analytics",
+  "scripts": {
+    "start": "serve public"
+  },
+  "keywords": [
+    "nlp",
+    "fake-review-detector",
+    "machine-learning",
+    "vercel"
+  ],
+  "author": "Vishwa",
+  "license": "MIT"
+}
