@@ -27,7 +27,7 @@ const NEG_WORDS = new Set(["bad", "worst", "drains", "fast", "terrible", "poor",
 
 function cleanText(s) {
   if (!s) return "";
-  let text = s.toLowerCase();
+  let text = String(s).toLowerCase();
   text = text.replace(/https?:\/\/\S+|www\.\S+/g, " ");
   text = text.replace(/<.*?>/g, " ");
   text = text.replace(/[^a-zA-Z\s]/g, " ");
@@ -36,7 +36,7 @@ function cleanText(s) {
 }
 
 function extractNumericFeatures(s) {
-  const text = s || "";
+  const text = String(s || "");
   const words = text.split(/\s+/).filter(w => w.length > 0);
   
   const exclamations = (text.match(/!/g) || []).length;
@@ -74,7 +74,17 @@ function extractNumericFeatures(s) {
 }
 
 function predictReview(text, threshold = 0.5) {
-  if (!modelWeights) return { prob: 0.5, isFake: false, features: extractNumericFeatures(text) };
+  const numFeats = extractNumericFeatures(text);
+  
+  if (!modelWeights || !modelWeights.vocabulary) {
+    // Fallback heuristic scoring if weights are loading
+    let score = 0.2;
+    if (numFeats.repeated_phrases > 0) score += 0.45 * numFeats.repeated_phrases;
+    if (numFeats.exclamation_count >= 2) score += 0.25;
+    if (numFeats.all_caps_tokens >= 1) score += 0.2;
+    const clamped = Math.min(Math.max(score, 0.02), 0.98);
+    return { prob: clamped, isFake: clamped >= threshold, features: numFeats, z: 0 };
+  }
   
   const cleaned = cleanText(text);
   const words = cleaned.split(" ").filter(w => w.length > 0);
@@ -92,7 +102,7 @@ function predictReview(text, threshold = 0.5) {
     tf[ng] = (tf[ng] || 0) + 1;
   });
   
-  let z = modelWeights.intercept;
+  let z = modelWeights.intercept || 0;
   
   Object.keys(tf).forEach(term => {
     if (modelWeights.vocabulary.hasOwnProperty(term)) {
@@ -104,15 +114,14 @@ function predictReview(text, threshold = 0.5) {
     }
   });
   
-  const numFeats = extractNumericFeatures(text);
   const numWeights = modelWeights.coef.slice(-6);
   
-  z += numFeats.sentiment * numWeights[0];
-  z += numFeats.exclamation_count * numWeights[1];
-  z += numFeats.all_caps_tokens * numWeights[2];
-  z += numFeats.repeated_phrases * numWeights[3];
-  z += (numFeats.char_length / 100) * numWeights[4];
-  z += numFeats.unique_word_ratio * numWeights[5];
+  z += numFeats.sentiment * (numWeights[0] || 0);
+  z += numFeats.exclamation_count * (numWeights[1] || 0);
+  z += numFeats.all_caps_tokens * (numWeights[2] || 0);
+  z += numFeats.repeated_phrases * (numWeights[3] || 0);
+  z += (numFeats.char_length / 100) * (numWeights[4] || 0);
+  z += numFeats.unique_word_ratio * (numWeights[5] || 0);
   
   const prob = 1 / (1 + Math.exp(-z));
   const isFake = prob >= threshold;
@@ -127,7 +136,7 @@ function predictReview(text, threshold = 0.5) {
 
 function highlightSuspicious(text) {
   if (!text) return "No review text entered.";
-  let safe = text
+  let safe = String(text)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
@@ -150,22 +159,28 @@ function highlightSuspicious(text) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Load weights
   try {
     const res = await fetch("./model_weights.json");
-    modelWeights = await res.json();
+    if (res.ok) {
+      modelWeights = await res.json();
+    }
   } catch (err) {
-    console.warn("Model weights load status:", err);
+    console.warn("Model weights fetch warning:", err);
   }
 
+  // Load sample dataset
   try {
     const sampleRes = await fetch("./reviews_sample.csv");
-    const csvText = await sampleRes.text();
-    parseSampleCSV(csvText);
+    if (sampleRes.ok) {
+      const csvText = await sampleRes.text();
+      parseSampleCSV(csvText);
+    }
   } catch (err) {
-    console.warn("Sample CSV load status:", err);
+    console.warn("Sample CSV fetch warning:", err);
   }
 
-  // Navigation Links
+  // Navigation Tabs
   const navLinks = document.querySelectorAll(".nav-link");
   navLinks.forEach(link => {
     link.addEventListener("click", (e) => {
@@ -176,7 +191,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       link.classList.add("active");
       
       document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-      document.getElementById(targetView).classList.add("active");
+      const activeTab = document.getElementById(targetView);
+      if (activeTab) activeTab.classList.add("active");
       
       const titles = {
         "tab-analyzer": ["Review Inspection", "Real-time linguistic, behavioral, and statistical classification"],
@@ -204,62 +220,86 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Threshold Slider
+  // Threshold slider live inspection
   const thresholdSlider = document.getElementById("threshold-slider");
   const thresholdVal = document.getElementById("threshold-val");
-  thresholdSlider.addEventListener("input", (e) => {
-    thresholdVal.textContent = parseFloat(e.target.value).toFixed(2);
-  });
+  if (thresholdSlider) {
+    thresholdSlider.addEventListener("input", (e) => {
+      thresholdVal.textContent = parseFloat(e.target.value).toFixed(2);
+      runLiveAnalysis();
+    });
+  }
 
-  document.getElementById("btn-analyze").addEventListener("click", runLiveAnalysis);
-  runLiveAnalysis();
+  const btnAnalyze = document.getElementById("btn-analyze");
+  if (btnAnalyze) {
+    btnAnalyze.addEventListener("click", runLiveAnalysis);
+  }
+  
+  // Batch Threshold slider
+  const batchThresholdSlider = document.getElementById("batch-threshold");
+  const batchThresholdVal = document.getElementById("batch-threshold-val");
+  if (batchThresholdSlider && batchThresholdVal) {
+    batchThresholdSlider.addEventListener("input", (e) => {
+      batchThresholdVal.textContent = parseFloat(e.target.value).toFixed(2);
+    });
+  }
 
-  // Batch CSV
+  // Batch CSV Handlers
   const batchFileInput = document.getElementById("batch-file-input");
   const btnBatchSample = document.getElementById("btn-batch-sample");
   const btnRunBatch = document.getElementById("btn-run-batch");
   
-  btnBatchSample.addEventListener("click", () => {
-    if (sampleData.length > 0) {
-      window.batchLoadedRows = sampleData;
-      populateColumnSelect(sampleData);
-      document.getElementById("batch-status-msg").innerHTML = `<span style="color: var(--status-verified)">✓ Loaded ${sampleData.length} records</span>`;
-      btnRunBatch.disabled = false;
-    }
-  });
-
-  batchFileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const lines = evt.target.result.split(/\r?\n/).filter(l => l.trim().length > 0);
-      const rows = [];
-      const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
-      for (let i = 1; i < lines.length; i++) {
-        const values = parseCSVLine(lines[i]);
-        if (values.length >= headers.length) {
-          const row = {};
-          headers.forEach((h, idx) => row[h] = values[idx]);
-          rows.push(row);
-        }
+  if (btnBatchSample) {
+    btnBatchSample.addEventListener("click", () => {
+      if (sampleData && sampleData.length > 0) {
+        window.batchLoadedRows = sampleData;
+        populateColumnSelect(sampleData);
+        document.getElementById("batch-status-msg").innerHTML = `<span style="color: var(--status-verified)">✓ Loaded ${sampleData.length} records ready for batch analysis</span>`;
+        if (btnRunBatch) btnRunBatch.disabled = false;
+      } else {
+        document.getElementById("batch-status-msg").innerHTML = `<span style="color: var(--status-flagged)">Loading sample data... please try in 1s.</span>`;
       }
-      window.batchLoadedRows = rows;
-      populateColumnSelect(rows);
-      document.getElementById("batch-status-msg").innerHTML = `<span style="color: var(--status-verified)">✓ Loaded ${rows.length} rows</span>`;
-      btnRunBatch.disabled = false;
-    };
-    reader.readAsText(file);
-  });
+    });
+  }
 
-  btnRunBatch.addEventListener("click", runBatchInference);
-  document.getElementById("dataset-search").addEventListener("input", filterDatasetTable);
-  document.getElementById("dataset-filter-label").addEventListener("change", filterDatasetTable);
+  if (batchFileInput) {
+    batchFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const textContent = evt.target.result;
+        const parsedRows = parseCSVFull(textContent);
+        if (parsedRows.length > 0) {
+          window.batchLoadedRows = parsedRows;
+          populateColumnSelect(parsedRows);
+          document.getElementById("batch-status-msg").innerHTML = `<span style="color: var(--status-verified)">✓ Uploaded ${parsedRows.length} rows from "${file.name}"</span>`;
+          if (btnRunBatch) btnRunBatch.disabled = false;
+        } else {
+          document.getElementById("batch-status-msg").innerHTML = `<span style="color: var(--status-flagged)">Could not parse records from CSV.</span>`;
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  if (btnRunBatch) {
+    btnRunBatch.addEventListener("click", runBatchInference);
+  }
+
+  const dSearch = document.getElementById("dataset-search");
+  const dFilter = document.getElementById("dataset-filter-label");
+  if (dSearch) dSearch.addEventListener("input", filterDatasetTable);
+  if (dFilter) dFilter.addEventListener("change", filterDatasetTable);
+
+  runLiveAnalysis();
 });
 
 function runLiveAnalysis() {
-  const text = document.getElementById("review-input").value;
-  const threshold = parseFloat(document.getElementById("threshold-slider").value);
+  const inputEl = document.getElementById("review-input");
+  if (!inputEl) return;
+  const text = inputEl.value;
+  const threshold = parseFloat(document.getElementById("threshold-slider")?.value || 0.5);
   const result = predictReview(text, threshold);
   
   const verdictBox = document.getElementById("verdict-box");
@@ -268,29 +308,37 @@ function runLiveAnalysis() {
   const verdictScore = document.getElementById("verdict-score");
   const verdictDesc = document.getElementById("verdict-desc");
   
-  if (result.isFake) {
-    verdictBox.className = "verdict-box flagged";
-    verdictTag.className = "verdict-tag flagged";
-    verdictTag.textContent = "FLAGGED: SUSPICIOUS";
-    meterFill.className = "meter-fill flagged";
-    verdictDesc.textContent = "High risk score detected from linguistic markers and repeated promotional phrasing.";
-  } else {
-    verdictBox.className = "verdict-box verified";
-    verdictTag.className = "verdict-tag verified";
-    verdictTag.textContent = "VERIFIED: AUTHENTIC";
-    meterFill.className = "meter-fill verified";
-    verdictDesc.textContent = "Linguistic markers and balanced sentiment indicate an organic customer review.";
+  if (verdictBox && verdictTag && meterFill && verdictScore && verdictDesc) {
+    if (result.isFake) {
+      verdictBox.className = "verdict-box flagged";
+      verdictTag.className = "verdict-tag flagged";
+      verdictTag.textContent = "FLAGGED: SUSPICIOUS";
+      meterFill.className = "meter-fill flagged";
+      verdictDesc.textContent = "High risk score detected from linguistic markers and repeated promotional phrasing.";
+    } else {
+      verdictBox.className = "verdict-box verified";
+      verdictTag.className = "verdict-tag verified";
+      verdictTag.textContent = "VERIFIED: AUTHENTIC";
+      meterFill.className = "meter-fill verified";
+      verdictDesc.textContent = "Linguistic markers and balanced sentiment indicate an organic customer review.";
+    }
+    
+    const pct = (result.prob * 100).toFixed(1);
+    verdictScore.textContent = `${pct}%`;
+    meterFill.style.width = `${pct}%`;
   }
   
-  const pct = (result.prob * 100).toFixed(1);
-  verdictScore.textContent = `${pct}%`;
-  meterFill.style.width = `${pct}%`;
-  
-  document.getElementById("metric-sentiment").textContent = result.features.sentiment.toFixed(2);
-  document.getElementById("metric-caps").textContent = result.features.all_caps_tokens;
-  document.getElementById("metric-exclamations").textContent = result.features.exclamation_count;
-  document.getElementById("metric-cliches").textContent = result.features.repeated_phrases;
-  document.getElementById("highlight-box").innerHTML = highlightSuspicious(text);
+  const sentEl = document.getElementById("metric-sentiment");
+  const capsEl = document.getElementById("metric-caps");
+  const excEl = document.getElementById("metric-exclamations");
+  const cliEl = document.getElementById("metric-cliches");
+  const hlEl = document.getElementById("highlight-box");
+
+  if (sentEl) sentEl.textContent = result.features.sentiment.toFixed(2);
+  if (capsEl) capsEl.textContent = result.features.all_caps_tokens;
+  if (excEl) excEl.textContent = result.features.exclamation_count;
+  if (cliEl) cliEl.textContent = result.features.repeated_phrases;
+  if (hlEl) hlEl.innerHTML = highlightSuspicious(text);
 }
 
 function parseCSVLine(line) {
@@ -312,13 +360,34 @@ function parseCSVLine(line) {
   return result;
 }
 
-function parseSampleCSV(text) {
+function parseCSVFull(text) {
   const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-  sampleData = [];
+  if (lines.length < 2) return [];
+  const headers = parseCSVLine(lines[0]);
+  const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i]);
-    if (values.length >= 2) {
-      sampleData.push({ text: values[0], label: values[1] });
+    if (values.length > 0) {
+      const row = {};
+      headers.forEach((h, idx) => {
+        row[h] = values[idx] || "";
+      });
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+function parseSampleCSV(text) {
+  sampleData = parseCSVFull(text);
+  if (sampleData.length === 0) {
+    // Fallback if formatting differs
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i]);
+      if (values.length >= 2) {
+        sampleData.push({ text: values[0], label: values[1] });
+      }
     }
   }
   renderDatasetTable(sampleData);
@@ -327,8 +396,10 @@ function parseSampleCSV(text) {
 function populateColumnSelect(rows) {
   if (!rows || rows.length === 0) return;
   const colSelect = document.getElementById("batch-col-select");
+  if (!colSelect) return;
   colSelect.innerHTML = "";
-  Object.keys(rows[0]).forEach(k => {
+  const keys = Object.keys(rows[0]);
+  keys.forEach(k => {
     const opt = document.createElement("option");
     opt.value = k;
     opt.textContent = k;
@@ -341,46 +412,62 @@ function populateColumnSelect(rows) {
 
 function runBatchInference() {
   const rows = window.batchLoadedRows;
-  if (!rows) return;
-  const col = document.getElementById("batch-col-select").value;
-  const thr = parseFloat(document.getElementById("batch-threshold").value);
+  if (!rows || rows.length === 0) {
+    alert("Please upload a CSV or load the sample benchmark dataset first.");
+    return;
+  }
+  
+  const colSelect = document.getElementById("batch-col-select");
+  const col = colSelect ? colSelect.value : Object.keys(rows[0])[0];
+  const thr = parseFloat(document.getElementById("batch-threshold")?.value || 0.5);
   
   let fakeCount = 0;
   let realCount = 0;
   let totalProb = 0;
   
   const results = rows.map(r => {
-    const text = r[col] || "";
+    const text = String(r[col] || Object.values(r)[0] || "");
     const pred = predictReview(text, thr);
     if (pred.isFake) fakeCount++;
     else realCount++;
     totalProb += pred.prob;
     return {
       ...r,
+      _review_text: text,
       predicted_label: pred.isFake ? "FLAGGED" : "AUTHENTIC",
-      fake_probability: (pred.prob * 100).toFixed(1) + "%"
+      fake_probability: (pred.prob * 100).toFixed(1) + "%",
+      _prob_num: pred.prob
     };
   });
   
   window.lastBatchResults = results;
   
-  document.getElementById("batch-total-count").textContent = results.length;
-  document.getElementById("batch-fake-count").textContent = fakeCount;
-  document.getElementById("batch-real-count").textContent = realCount;
-  document.getElementById("batch-avg-prob").textContent = ((totalProb / results.length) * 100).toFixed(1) + "%";
+  const totalEl = document.getElementById("batch-total-count");
+  const fakeEl = document.getElementById("batch-fake-count");
+  const realEl = document.getElementById("batch-real-count");
+  const avgEl = document.getElementById("batch-avg-prob");
+  
+  if (totalEl) totalEl.textContent = results.length;
+  if (fakeEl) fakeEl.textContent = fakeCount;
+  if (realEl) realEl.textContent = realCount;
+  if (avgEl) avgEl.textContent = ((totalProb / results.length) * 100).toFixed(1) + "%";
   
   renderBatchTable(results);
-  document.getElementById("batch-results-dashboard").style.display = "block";
+  const dash = document.getElementById("batch-results-dashboard");
+  if (dash) dash.style.display = "block";
 }
 
 function renderBatchTable(data) {
   const tbody = document.getElementById("batch-table-body");
+  if (!tbody) return;
   tbody.innerHTML = "";
-  data.slice(0, 50).forEach(row => {
+  
+  data.slice(0, 100).forEach(row => {
     const tr = document.createElement("tr");
     const isFake = row.predicted_label === "FLAGGED";
+    const text = row._review_text || row.text || Object.values(row)[0];
     tr.innerHTML = `
-      <td style="max-width: 480px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">${escapeHtml(row.text || Object.values(row)[0])}</td>
+      <td style="max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">${escapeHtml(text)}</td>
       <td><span class="verdict-tag ${isFake ? 'flagged' : 'verified'}">${row.predicted_label}</span></td>
       <td style="font-family: var(--font-mono); font-weight: 600;">${row.fake_probability}</td>
     `;
@@ -390,23 +477,29 @@ function renderBatchTable(data) {
 
 function renderDatasetTable(data) {
   const tbody = document.getElementById("dataset-table-body");
-  if (!tbody) return;
+  if (!tbody || !data) return;
   tbody.innerHTML = "";
-  document.getElementById("dataset-total-count").textContent = data.length;
+  
+  const totalEl = document.getElementById("dataset-total-count");
+  const realEl = document.getElementById("dataset-real-count");
+  const fakeEl = document.getElementById("dataset-fake-count");
   
   let real = 0, fake = 0;
   data.forEach(r => {
-    if (r.label.toUpperCase() === "FAKE") fake++;
+    const label = String(r.label || "").toUpperCase();
+    if (label === "FAKE" || label === "1") fake++;
     else real++;
   });
-  document.getElementById("dataset-real-count").textContent = real;
-  document.getElementById("dataset-fake-count").textContent = fake;
+  
+  if (totalEl) totalEl.textContent = data.length;
+  if (realEl) realEl.textContent = real;
+  if (fakeEl) fakeEl.textContent = fake;
   
   data.forEach(r => {
     const tr = document.createElement("tr");
-    const isFake = r.label.toUpperCase() === "FAKE";
+    const isFake = String(r.label || "").toUpperCase() === "FAKE";
     tr.innerHTML = `
-      <td>${escapeHtml(r.text)}</td>
+      <td>${escapeHtml(r.text || "")}</td>
       <td><span class="verdict-tag ${isFake ? 'flagged' : 'verified'}">${isFake ? 'SYNTHETIC' : 'AUTHENTIC'}</span></td>
     `;
     tbody.appendChild(tr);
@@ -414,22 +507,25 @@ function renderDatasetTable(data) {
 }
 
 function filterDatasetTable() {
-  const q = document.getElementById("dataset-search").value.toLowerCase();
-  const filterLabel = document.getElementById("dataset-filter-label").value;
+  const q = (document.getElementById("dataset-search")?.value || "").toLowerCase();
+  const filterLabel = document.getElementById("dataset-filter-label")?.value || "ALL";
   
   const filtered = sampleData.filter(r => {
-    const matchText = r.text.toLowerCase().includes(q);
-    const matchLabel = filterLabel === "ALL" || (filterLabel === "REAL" && r.label.toUpperCase() === "REAL") || (filterLabel === "FAKE" && r.label.toUpperCase() === "FAKE");
+    const text = String(r.text || "").toLowerCase();
+    const label = String(r.label || "").toUpperCase();
+    const matchText = text.includes(q);
+    const matchLabel = filterLabel === "ALL" || (filterLabel === "REAL" && (label === "REAL" || label === "0")) || (filterLabel === "FAKE" && (label === "FAKE" || label === "1"));
     return matchText && matchLabel;
   });
   
   const tbody = document.getElementById("dataset-table-body");
+  if (!tbody) return;
   tbody.innerHTML = "";
   filtered.forEach(r => {
     const tr = document.createElement("tr");
-    const isFake = r.label.toUpperCase() === "FAKE";
+    const isFake = String(r.label || "").toUpperCase() === "FAKE";
     tr.innerHTML = `
-      <td>${escapeHtml(r.text)}</td>
+      <td>${escapeHtml(r.text || "")}</td>
       <td><span class="verdict-tag ${isFake ? 'flagged' : 'verified'}">${isFake ? 'SYNTHETIC' : 'AUTHENTIC'}</span></td>
     `;
     tbody.appendChild(tr);
@@ -438,5 +534,5 @@ function filterDatasetTable() {
 
 function escapeHtml(str) {
   if (!str) return "";
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

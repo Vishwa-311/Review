@@ -165,9 +165,9 @@
               <input type="file" id="batch-file-input" class="form-input" accept=".csv">
             </div>
             <div>
-              <label class="form-label">Sample Data</label>
+              <label class="form-label">Sample Benchmark Data</label>
               <button id="btn-batch-sample" class="btn btn-outline btn-full" style="padding: 10px;">
-                Load 70 Benchmark Records
+                📂 Load 70 Benchmark Records
               </button>
             </div>
           </div>
@@ -182,7 +182,10 @@
               </select>
             </div>
             <div>
-              <label class="form-label">Decision Threshold</label>
+              <div class="slider-labels" style="margin-bottom: 6px;">
+                <span>Decision Threshold</span>
+                <span id="batch-threshold-val">0.50</span>
+              </div>
               <input type="range" id="batch-threshold" min="0.1" max="0.9" step="0.05" value="0.5">
             </div>
           </div>
@@ -216,14 +219,14 @@
 
           <div class="card">
             <div class="card-header">
-              <span class="card-title">Processed Records</span>
+              <span class="card-title">Processed Records Preview</span>
             </div>
             <div class="table-container">
               <table class="data-table">
                 <thead>
                   <tr>
                     <th>Review Content</th>
-                    <th style="width: 130px;">Classification</th>
+                    <th style="width: 140px;">Classification</th>
                     <th style="width: 110px;">Risk Score</th>
                   </tr>
                 </thead>
@@ -309,7 +312,7 @@
               <thead>
                 <tr>
                   <th>Review Text</th>
-                  <th style="width: 130px;">Ground Truth</th>
+                  <th style="width: 140px;">Ground Truth</th>
                 </tr>
               </thead>
               <tbody id="dataset-table-body">
